@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: DVD
+  datasource:
+    url: jdbc:mongodb://localhost:27017/dvd
+    username: myUserAdmin
+    password: abc123
+  devtools:
+    livereload:
+      enabled: true
+    add-properties: true
+server:
+  port: ${port:8080}
+  address: 127.0.0.1
+  http2:
+    enabled: true
+  error:
+    include-exception: true
+    include-binding-errors: always
+    include-message: always
+    include-stacktrace: always
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    path: /swagger.html
+logging:
+  level:
+    root: debug
+    org.springframework.web: off
+  file:
+    name: logs/application-debug.log

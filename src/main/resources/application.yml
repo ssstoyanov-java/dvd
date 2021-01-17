@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: DVD
+  datasource:
+    url: jdbc:mongodb://localhost:27017/dvd
+    username: myUserAdmin
+    password: abc123
+server:
+  port: 8080
+  http2:
+    enabled: true
+  error:
+    include-exception: true
+    include-binding-errors: always
+    include-message: always
+    include-stacktrace: always
+logging:
+  level:
+    root: info
+    org.springframework.web: off

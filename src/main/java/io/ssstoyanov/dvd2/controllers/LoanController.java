@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
 import java.util.Optional;
 
 @RequestMapping("/api/v1")
@@ -42,30 +41,41 @@ public class LoanController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful loan"),
-            @ApiResponse(responseCode = "404", description = "User did not found by name"),
+            @ApiResponse(responseCode = "404", description = "User or disk did not found by name"),
             @ApiResponse(responseCode = "409", description = "Disk already taken")
     })
     @Transactional
     @RequestMapping(value = "/loan/take", method = RequestMethod.POST, produces = "application/json")
-    public ResponseEntity<?> takeLoan(Disk disk, String username) {
-        disk = diskRepository.findByName(disk.getName()).get();
-        if (!disk.getOriginalOwner().equals(userRepository.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).get())) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
+    public ResponseEntity<String> takeLoan(Disk disk, String username) {
+        Optional<Disk> optionalDisk = diskRepository.findByName(disk.getName());
         Optional<User> user = userRepository.findByUsername(username);
-        if (user.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else if (disk.getCurrentOwner() != null) {
+        if (optionalDisk.isEmpty()) {        // check disk is correct
+            return new ResponseEntity<>("Disk not found", HttpStatus.NOT_FOUND);
+        } else if (disk.getCurrentOwner() != null) {         // check the disk is not already taken
             return new ResponseEntity<>(HttpStatus.CONFLICT);
+        } else if (!disk.getOriginalOwner()
+                .equals(userRepository
+                        .findByUsername(SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getName()).orElse(null))) {         // check the user have owner rights
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } else if (user.isEmpty()) {    // check the user to does exist
+            return new ResponseEntity<>("The user not found", HttpStatus.NOT_FOUND);
         } else {
+            disk = optionalDisk.get();
             User currentUser = user.get();
             disk.setCurrentOwner(currentUser);
             currentUser.getDisks().add(disk);
+            User originalOwner = disk.getOriginalOwner();
+            originalOwner.getDisks().remove(disk);
+            userRepository.save(originalOwner);
             userRepository.save(currentUser);
             diskRepository.save(disk);
             return new ResponseEntity<>(HttpStatus.OK);
         }
     }
+
 
     @JsonIgnore
     @JsonView(View.Public.class)
@@ -81,14 +91,21 @@ public class LoanController {
     })
     @Transactional
     @RequestMapping(value = "/loan/pay", method = RequestMethod.POST, produces = "application/json")
-    public ResponseEntity<?> payLoan(Disk disk) {
-        disk = diskRepository.findByName(disk.getName()).get();
-        User user = disk.getCurrentOwner();
-        user.getDisks().remove(disk);
-        disk.setCurrentOwner(null);
-        userRepository.save(user);
-        diskRepository.save(disk);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<String> payLoan(Disk disk) {
+        Optional<Disk> optionalDisk = diskRepository.findByName(disk.getName());
+        if (optionalDisk.isEmpty()) {         // check disk is correct
+            return new ResponseEntity<>("Disk not found", HttpStatus.NOT_FOUND);
+        } else if (disk.getCurrentOwner() == null) {         // check the disk was taken
+            return new ResponseEntity<>("Disk already free", HttpStatus.CONFLICT);
+        } else {
+            disk = optionalDisk.get();
+            User user = disk.getCurrentOwner();
+            user.getDisks().remove(disk);
+            disk.setCurrentOwner(null);
+            userRepository.save(user);
+            diskRepository.save(disk);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
     }
 
 }

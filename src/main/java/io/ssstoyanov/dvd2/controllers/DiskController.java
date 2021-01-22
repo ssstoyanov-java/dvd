@@ -34,6 +34,8 @@ public class DiskController {
         this.userRepository = userRepository;
     }
 
+    @JsonIgnore
+    @JsonView(View.ExtendedPublic.class)
     @Operation(
             summary = "List of own dvd disks for each user",
             description = "Returns a page-by-page display of the user's dvd disks by its name"
@@ -50,6 +52,8 @@ public class DiskController {
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @JsonIgnore
+    @JsonView(View.ExtendedPublic.class)
     @Operation(
             summary = "List of DVD discs that you can take",
             description = "Returns a page-by-page display of free to take DVDs"
@@ -62,6 +66,9 @@ public class DiskController {
         return new ResponseEntity<>(diskRepository.findDiskByOriginalOwnerIsNull(pageable), HttpStatus.OK);
     }
 
+
+    @JsonIgnore
+    @JsonView(View.ExtendedPublic.class)
     @Operation(
             summary = "List of DVD discs that you can take from other users",
             description = "Returns a page-by-page display of user's free to take DVDs"
@@ -74,7 +81,8 @@ public class DiskController {
         return new ResponseEntity<>(diskRepository.findDiskByCurrentOwnerIsNull(pageable), HttpStatus.OK);
     }
 
-
+    @JsonIgnore
+    @JsonView(View.ExtendedPublic.class)
     @Operation(
             summary = "List of disks taken from the user",
             description = "Returns a page-by-page list of disks taken from the user (indicating who took it)"
@@ -91,6 +99,8 @@ public class DiskController {
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @JsonIgnore
+    @JsonView(View.ExtendedPublic.class)
     @Operation(
             summary = "List of disks taken by the user",
             description = "Returns a page-by-page list of disks taken by the user"

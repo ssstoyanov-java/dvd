@@ -22,10 +22,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @TypeAlias("disk")
 public class Disk {
     @Id
-    @JsonView(View.Internal.class)
+    @JsonView(View.ExtendedPublic.class)
     private ObjectId id;
 
-    @JsonView(View.Public.class)
+    @JsonView({View.ExtendedPublic.class, View.Public.class})
     private String name;
 
     @JsonView(View.ExtendedPublic.class)

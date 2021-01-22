@@ -1,5 +1,8 @@
 package io.ssstoyanov.dvd2.controllers;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
+import io.ssstoyanov.dvd2.configurations.View;
 import io.ssstoyanov.dvd2.entities.Disk;
 import io.ssstoyanov.dvd2.repositories.DiskRepository;
 import io.ssstoyanov.dvd2.repositories.UserRepository;
@@ -70,6 +73,7 @@ public class DiskController {
     public ResponseEntity<Page<Disk>> getFreeUsersDisks(Pageable pageable) {
         return new ResponseEntity<>(diskRepository.findDiskByCurrentOwnerIsNull(pageable), HttpStatus.OK);
     }
+
 
     @Operation(
             summary = "List of disks taken from the user",

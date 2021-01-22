@@ -30,6 +30,10 @@ dependencies {
     implementation 'org.springdoc:springdoc-openapi-ui:+'
     implementation 'org.springdoc:springdoc-openapi-data-rest:+'
 
+    // Log4J
+    implementation 'log4j:log4j:+'
+
+
     compileOnly 'org.projectlombok:lombok'
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'

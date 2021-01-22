@@ -9,7 +9,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -28,7 +27,7 @@ public class MongoUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("User not found");
         }
         User u = user.get();
-        List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("user"));
-        return new org.springframework.security.core.userdetails.User(u.getUsername(), u.getPassword(), authorities);
+        return new org.springframework.security.core.userdetails.User(u.getUsername(), u.getPassword(), Collections.singletonList(new SimpleGrantedAuthority("user")));
     }
+
 }

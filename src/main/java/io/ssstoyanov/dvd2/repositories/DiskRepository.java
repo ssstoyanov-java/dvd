@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface DiskRepository extends MongoRepository<Disk, Long> {
     Page<Disk> findDiskByOriginalOwnerIsNull(Pageable pageable);
@@ -18,4 +20,6 @@ public interface DiskRepository extends MongoRepository<Disk, Long> {
     Page<Disk> findDiskByOriginalOwnerAndCurrentOwnerIsNotNull(User user, Pageable pageable);
 
     Page<Disk> findDiskByCurrentOwner(User user, Pageable pageable);
+
+    Optional<Disk> findByName(String name);
 }

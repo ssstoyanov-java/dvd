@@ -1,0 +1,338 @@
+---
+openapi: 3.0.1
+info:
+  title: DVD Sharing
+  contact:
+    name: Stanislav Stoianov
+    url: https://t.me/slowslav
+    email: stanis.stoyanov@gmail.com
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Generated server url
+tags:
+  - name: Disk Controller
+    description: Provide info about free disks and user's disks
+paths:
+  "/api/v1/users":
+    post:
+      tags:
+        - user-controller
+      summary: User sign up
+      operationId: signUp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/User_Public"
+      responses:
+        '200':
+          description: User successfully created
+          content:
+            application/json:
+              schema:
+                type: string
+        '409':
+          description: The user already exist
+          content:
+            application/json:
+              schema:
+                type: string
+  "/api/v1/disks":
+    get:
+      tags:
+        - Disk Controller
+      summary: List of DVD discs that you can take
+      description: Returns a page-by-page display of free to take DVDs
+      operationId: getFreeDisks
+      parameters:
+        - name: pageable
+          in: query
+          required: true
+          schema:
+            "$ref": "#/components/schemas/Pageable"
+      responses:
+        '200':
+          description: Successful get
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PageDisk"
+  "/api/v1/disks/{username}":
+    get:
+      tags:
+        - Disk Controller
+      summary: List of own dvd disks for each user
+      description: Returns a page-by-page display of the user's dvd disks by its name
+      operationId: getUsersDisks
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: pageable
+          in: query
+          required: true
+          schema:
+            "$ref": "#/components/schemas/Pageable"
+      responses:
+        '200':
+          description: Successful get
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PageDisk"
+        '404':
+          description: User did not found by name
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PageDisk"
+  "/api/v1/disks/occupied/{username}":
+    get:
+      tags:
+        - Disk Controller
+      summary: List of disks taken by the user
+      description: Returns a page-by-page list of disks taken by the user
+      operationId: getTakenDisksByUser
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: pageable
+          in: query
+          required: true
+          schema:
+            "$ref": "#/components/schemas/Pageable"
+      responses:
+        '200':
+          description: Successful get
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PageDisk"
+        '404':
+          description: User did not found by name
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PageDisk"
+  "/api/v1/disks/free":
+    get:
+      tags:
+        - Disk Controller
+      summary: List of DVD discs that you can take from other users
+      description: Returns a page-by-page display of user's free to take DVDs
+      operationId: getFreeUsersDisks
+      parameters:
+        - name: pageable
+          in: query
+          required: true
+          schema:
+            "$ref": "#/components/schemas/Pageable"
+      responses:
+        '200':
+          description: Successful get
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PageDisk"
+  "/api/v1/disks/busy/{username}":
+    get:
+      tags:
+        - Disk Controller
+      summary: List of disks taken from the user
+      description: Returns a page-by-page list of disks taken from the user (indicating
+        who took it)
+      operationId: getTakenDisksFromUser
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: pageable
+          in: query
+          required: true
+          schema:
+            "$ref": "#/components/schemas/Pageable"
+      responses:
+        '200':
+          description: Successful get
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PageDisk"
+        '404':
+          description: User did not found by name
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PageDisk"
+components:
+  schemas:
+    Disk_Public:
+      type: object
+      properties:
+        id:
+          "$ref": "#/components/schemas/ObjectId_Public"
+        name:
+          type: string
+        originalOwner:
+          "$ref": "#/components/schemas/User_Public"
+        currentOwner:
+          "$ref": "#/components/schemas/User_Public"
+    ObjectId_Public:
+      type: object
+      properties:
+        timestamp:
+          type: integer
+          format: int32
+        counter:
+          type: integer
+          format: int32
+          deprecated: true
+        machineIdentifier:
+          type: integer
+          format: int32
+          deprecated: true
+        processIdentifier:
+          type: integer
+          format: int32
+          deprecated: true
+        timeSecond:
+          type: integer
+          format: int32
+          deprecated: true
+        time:
+          type: integer
+          format: int64
+          deprecated: true
+        date:
+          type: string
+          format: date-time
+      readOnly: true
+    User_Public:
+      type: object
+      properties:
+        id:
+          "$ref": "#/components/schemas/ObjectId_Public"
+        username:
+          type: string
+        disks:
+          type: array
+          items:
+            "$ref": "#/components/schemas/Disk_Public"
+    Pageable:
+      type: object
+      properties:
+        page:
+          minimum: 0
+          type: integer
+          format: int32
+        size:
+          minimum: 1
+          type: integer
+          format: int32
+        sort:
+          type: array
+          items:
+            type: string
+    Disk:
+      type: object
+      properties:
+        id:
+          "$ref": "#/components/schemas/ObjectId"
+        name:
+          type: string
+        originalOwner:
+          "$ref": "#/components/schemas/User"
+        currentOwner:
+          "$ref": "#/components/schemas/User"
+    ObjectId:
+      type: object
+      properties:
+        timestamp:
+          type: integer
+          format: int32
+        counter:
+          type: integer
+          format: int32
+          deprecated: true
+        machineIdentifier:
+          type: integer
+          format: int32
+          deprecated: true
+        processIdentifier:
+          type: integer
+          format: int32
+          deprecated: true
+        timeSecond:
+          type: integer
+          format: int32
+          deprecated: true
+        time:
+          type: integer
+          format: int64
+          deprecated: true
+        date:
+          type: string
+          format: date-time
+      readOnly: true
+    PageDisk:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        pageable:
+          "$ref": "#/components/schemas/Pageable"
+        sort:
+          "$ref": "#/components/schemas/Sort"
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            "$ref": "#/components/schemas/Disk"
+        number:
+          type: integer
+          format: int32
+        first:
+          type: boolean
+        last:
+          type: boolean
+        numberOfElements:
+          type: integer
+          format: int32
+        empty:
+          type: boolean
+    Sort:
+      type: object
+      properties:
+        sorted:
+          type: boolean
+        unsorted:
+          type: boolean
+        empty:
+          type: boolean
+    User:
+      type: object
+      properties:
+        id:
+          "$ref": "#/components/schemas/ObjectId"
+        username:
+          type: string
+        password:
+          type: string
+        disks:
+          type: array
+          items:
+            "$ref": "#/components/schemas/Disk"

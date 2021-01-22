@@ -2,7 +2,7 @@ spring:
   application:
     name: DVD
   datasource:
-    url: jdbc:mongodb://localhost:27017/dvd
+    url: jdbc:mongodb://localhost:27017/test
     username: myUserAdmin
     password: abc123
 server:

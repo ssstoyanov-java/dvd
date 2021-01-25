@@ -30,8 +30,15 @@ dependencies {
     implementation 'org.springdoc:springdoc-openapi-ui:+'
     implementation 'org.springdoc:springdoc-openapi-data-rest:+'
 
+    // Mongo DB
+    implementation 'org.mongodb:mongo-java-driver:+'
+    implementation 'tomcat:tomcat-apr:5.5.23'
+
     // Log4J
     implementation 'log4j:log4j:+'
+
+    // GSON
+    implementation 'com.google.code.gson:gson:+'
 
 
     compileOnly 'org.projectlombok:lombok'
@@ -44,9 +51,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
 
-    implementation 'org.mongodb:mongo-java-driver:+'
 
-    implementation 'tomcat:tomcat-apr:5.5.23'
 }
 
 test {

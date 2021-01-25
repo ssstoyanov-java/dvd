@@ -51,9 +51,9 @@ public class LoanController {
         Optional<User> user = userRepository.findByUsername(username);
         if (optionalDisk.isEmpty()) {        // check disk is correct
             return new ResponseEntity<>("Disk not found", HttpStatus.NOT_FOUND);
-        } else if (disk.getCurrentOwner() != null) {         // check the disk is not already taken
+        } else if (optionalDisk.get().getCurrentOwner() != null) {         // check the disk is not already taken
             return new ResponseEntity<>(HttpStatus.CONFLICT);
-        } else if (!disk.getOriginalOwner()
+        } else if (!optionalDisk.get().getOriginalOwner()
                 .equals(userRepository
                         .findByUsername(SecurityContextHolder
                                 .getContext()
@@ -95,8 +95,8 @@ public class LoanController {
         Optional<Disk> optionalDisk = diskRepository.findByName(disk.getName());
         if (optionalDisk.isEmpty()) {         // check disk is correct
             return new ResponseEntity<>("Disk not found", HttpStatus.NOT_FOUND);
-        } else if (disk.getCurrentOwner() == null) {         // check the disk was taken
-            return new ResponseEntity<>("Disk already free", HttpStatus.CONFLICT);
+        } else if (disk.getCurrentOwner() != null) {         // check the disk is on rent
+            return new ResponseEntity<>("Disk on rent", HttpStatus.CONFLICT);
         } else {
             disk = optionalDisk.get();
             User user = disk.getCurrentOwner();
@@ -108,4 +108,41 @@ public class LoanController {
         }
     }
 
+    @JsonIgnore
+    @JsonView(View.Public.class)
+    @Operation(
+            summary = "Give a disc absolutely free",
+            description = "The disk is belongs to nobody"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful pay"),
+            @ApiResponse(responseCode = "404", description = "User did not found by name"),
+            @ApiResponse(responseCode = "409", description = "Disk already free")
+
+    })
+    @Transactional
+    @RequestMapping(value = "/loan/free", method = RequestMethod.POST, produces = "application/json")
+    public ResponseEntity<String> freeDisk(Disk disk) {
+        Optional<Disk> optionalDisk = diskRepository.findByName(disk.getName());
+        if (optionalDisk.isEmpty()) {         // check disk is correct
+            return new ResponseEntity<>("Disk not found", HttpStatus.NOT_FOUND);
+        } else if (optionalDisk.get().getCurrentOwner() == null) {         // check the disk was taken
+            return new ResponseEntity<>("Disk already free", HttpStatus.CONFLICT);
+        } else if (!disk.getOriginalOwner()
+                .equals(userRepository
+                        .findByUsername(SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getName()).orElse(null))) {         // check the user have owner rights
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } else {
+            disk = optionalDisk.get();
+            User user = disk.getCurrentOwner();
+            user.getDisks().remove(disk);
+            disk.setCurrentOwner(null);
+            userRepository.save(user);
+            diskRepository.save(disk);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+    }
 }

@@ -37,13 +37,15 @@ public class UserController {
     @Operation(summary = "User sign up")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User successfully created"),
-            @ApiResponse(responseCode = "409", description = "The user already exist")
+            @ApiResponse(responseCode = "409", description = "The user already exist"),
+            @ApiResponse(responseCode = "400", description = "The request is a unprocessable")
     })
     @Transactional
     @RequestMapping(value = "", method = RequestMethod.POST, consumes = "application/json")
     public ResponseEntity<?> userCreation(@RequestBody User user) {
-        System.out.println(user);
-        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+        if (user.getUsername() == null || user.getPassword() == null || user.getDisks() != null){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } else if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         } else {
             userRepository.save(new User(new ObjectId(), user.getUsername(), bCryptPasswordEncoder.encode(user.getPassword()), null));
